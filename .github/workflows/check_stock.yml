@@ -1,0 +1,49 @@
+name: Check NVIDIA GPU Stock
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Run every 15 minutes
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  check-stock:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - uses: browser-actions/setup-chrome@v1
+      with:
+        install-chromedriver: true
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+    - name: Install dependencies
+      run: poetry install --no-interaction
+
+    - name: Restore state cache
+      id: cache-state
+      uses: actions/cache@v3
+      with:
+        path: gpu_availability.json
+        key: gpu-state-${{ github.run_id }}
+        restore-keys: |
+          gpu-state-
+
+    - name: Run stock checker
+      env:
+        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
+        SMS_TO_NUMBER: ${{ secrets.SMS_TO_NUMBER }}
+      run: poetry run python main.py

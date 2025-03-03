@@ -1,0 +1,24 @@
+[project]
+name = "nvidia-gpu-stock-checker"
+version = "0.0.1"
+description = "Monitors NVIDIA's website for RTX 5090 FE availability and sends SMS notifications"
+authors = [
+    {name = "Sam Sipe", email = "sam@sipe.io"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.2"
+lxml = "^4.9.3"
+python-dotenv = "^1.0.0"
+twilio = "^8.10.0"
+selenium = "^4.29.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
