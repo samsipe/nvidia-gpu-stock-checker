@@ -1,10 +1,10 @@
 # NVIDIA RTX 5090 Stock Checker
 
-This repository monitors NVIDIA's website for RTX 5090 GPU availability and sends an SMS notification when it comes in stock.
+This repository monitors Newegg's website for RTX 5090 GPU availability and sends an SMS notification when it comes in stock.
 
 ## Features
 
-- Checks NVIDIA's website every 15 minutes using GitHub Actions
+- Checks Newegg's website every ~hour minutes using GitHub Actions
 - Sends SMS notifications when the GPU becomes available
 - Only alerts on state changes (unavailable → available) to avoid notification spam
 - Uses GitHub Actions Cache to reliably maintain state between runs
@@ -30,16 +30,16 @@ This repository monitors NVIDIA's website for RTX 5090 GPU availability and send
 4. **Enable GitHub Actions**
    - Go to the Actions tab and enable workflows
 
-5. **Done!** The workflow will now run every 15 minutes to check stock status.
+5. **Done!** The workflow will now run every hour to check stock status.
 
 You can also manually trigger a check by going to the Actions tab and running the "Check NVIDIA GPU Stock" workflow.
 
 ## How It Works
 
-1. The GitHub Action runs every 15 minutes
+1. The GitHub Action runs every 57 minutes
 2. It uses GitHub's cache system to store and retrieve the previous stock state
-3. The script checks NVIDIA's website for RTX 5090 FE availability
-4. If the GPU is in stock and it was previously out of stock, an SMS is sent
+3. The script checks Newegg's website for RTX 5090 availability
+4. If the GPU is in stock and it was previously out of stock, an SMS is sent with Twilio
 5. The new state is saved to the cache for the next run
 
 ## Twilio Cost Consideration
@@ -75,7 +75,7 @@ If you want to test the script locally:
 
 ## Customization
 
-Edit the `config.py` file to change:
-- Target GPU model
-- Monitoring URL
-- Other configuration options
+Edit the [config.py](config.py) file to change:
+- Target GPU model `TARGET_GPU`
+- Monitoring URL `NVIDIA_URL` (link to a product search on Newegg)
+- This can be modified to check the stock of any item on Newegg
