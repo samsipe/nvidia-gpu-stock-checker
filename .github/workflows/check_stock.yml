@@ -31,7 +31,7 @@ jobs:
           gpu_availability.json
           .venv
           ~/.local
-        key: gpu-state-${{ github.run_id }}
+        key: gpu-state-${{ github.sha }}
         restore-keys: |
           gpu-state-
 
