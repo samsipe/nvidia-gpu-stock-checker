@@ -6,44 +6,23 @@ from bs4 import BeautifulSoup
 import time
 import logging
 
-
 from config import NVIDIA_URL, STATE_FILE, TARGET_GPU
+from src.state_manager import StateManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class StockChecker:
     def __init__(self):
         self.url = NVIDIA_URL
-        self.state_file = STATE_FILE
-        self.previous_state = self.load_previous_state()
-        logging.debug(f"Initialized StockChecker with URL: {self.url} and state file: {self.state_file}")
-
-    def load_previous_state(self):
-        """Load previous availability state from file"""
-        if os.path.exists(self.state_file):
-            try:
-                with open(self.state_file, 'r') as f:
-                    state = json.load(f)
-                    logging.debug(f"Loaded previous state: {state}")
-                    return state
-            except Exception as e:
-                logging.error(f"Error loading previous state: {e}")
-                return {"available": False, "last_checked": None}
-        logging.debug("No previous state file found, returning default state.")
-        return {"available": False, "last_checked": None}
-
-    def save_current_state(self, state):
-        """Save current availability state to file"""
-        state["last_checked"] = time.time()
-        try:
-            with open(self.state_file, 'w') as f:
-                json.dump(state, f)
-                logging.debug(f"Saved current state: {state}")
-        except Exception as e:
-            logging.error(f"Error saving state: {e}")
+        self.state_manager = StateManager()
+        logging.debug(f"Initialized StockChecker with URL: {self.url}")
 
     def check_stock(self):
         """Check if the GPU is in stock"""
+        # Get previous state
+        previous_state = self.state_manager.get_stock_state()
+        previous_available = previous_state.get("available", False)
+
         options = webdriver.ChromeOptions()
         options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36')
         options.add_argument("--no-sandbox")
@@ -84,22 +63,18 @@ class StockChecker:
                             is_available = 'add to cart' in availability_text and 'out of stock' not in availability_text
                             logging.info(f"{'In Stock' if is_available else 'Not Available'}: {title}")
 
-                            current_state = {"available": is_available, "last_checked": time.time()}
-
-                            # Check if state changed from unavailable to available
-                            state_changed = is_available and not self.previous_state.get("available", False)
-
-                            # Save current state
-                            self.save_current_state(current_state)
+                            # Update state and check if it changed from not available to available
+                            state_changed = is_available and not previous_available
+                            self.state_manager.update_stock_state(is_available)
 
                             # Return on the first available GPU
                             if is_available:
                                 return is_available, state_changed
 
                 # If we reached here, didn't find the product
-                self.save_current_state({"available": False, "last_checked": time.time()})
-                return False, False
-
+                state_changed = False and previous_available  # Only changed if was previously available
+                self.state_manager.update_stock_state(False)
+                return False, state_changed
 
             except TimeoutException:
                 logging.warning(f"Request timed out on attempt {attempt+1}/{max_retries}")
@@ -108,14 +83,15 @@ class StockChecker:
                     time.sleep(retry_delay)
                 else:
                     logging.error("All retry attempts failed with timeout")
-                    self.save_current_state({"available": False, "last_checked": time.time()})
-                    return False, False
+                    self.state_manager.update_stock_state(False)
+                    return False, previous_available  # Only changed if was previously available
             except Exception as e:
                 logging.error(f"Error checking stock: {e}")
-                self.save_current_state({"available": False, "last_checked": time.time()})
-                return False, False
+                self.state_manager.update_stock_state(False)
+                return False, previous_available  # Only changed if was previously available
 
         # If we reached here without finding the product
         logging.warning(f"Could not find {TARGET_GPU} on the page after all attempts")
-        self.save_current_state({"available": False, "last_checked": time.time()})
-        return False, False
+        state_changed = False and previous_available  # Only changed if was previously available
+        self.state_manager.update_stock_state(False)
+        return False, state_changed
