@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 
 from config import STATE_FILE
 
@@ -14,7 +14,7 @@ class StateManager:
     DEFAULT_STATE = {
         "available": False,
         "subscribers": [],
-        "last_message_date": None
+        "last_message_date": datetime.now(timezone.utc).isoformat() # Prevents a burst of messages when the cache is empty
     }
 
     def __init__(self, state_file=STATE_FILE):
@@ -111,7 +111,4 @@ class StateManager:
     def get_last_message_date(self):
         """Get the last message date checked, defaulting to one hour ago if not set"""
         state = self.load_state()
-        if state["last_message_date"] is None:
-            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-            return one_hour_ago.isoformat() + "+00:00"
         return state["last_message_date"]
