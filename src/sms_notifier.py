@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from twilio.http.http_client import TwilioHttpClient
+import time
 
 from config import (
     TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER,
@@ -58,12 +59,7 @@ class SMSNotifier:
                     logging.info(f"SMS notification sent to {to_number} with SID: {message.sid}")
                     successful_sends += 1
                 except TwilioRestException as e:
-                    # Check for opt-out error code
-                    if e.code == 21610:  # User has opted out
-                        logging.info(f"User {to_number} has opted out, removing from subscribers")
-                        self.state_manager.remove_subscriber(to_number)
-                    else:
-                        logging.error(f"Twilio error sending SMS to {to_number}: {e}")
+                    logging.error(f"Twilio error sending SMS to {to_number}: {e}")
                 except Exception as e:
                     logging.error(f"Error sending SMS to {to_number}: {e}")
 
@@ -121,7 +117,13 @@ class SMSNotifier:
                         messaging_service_sid=self.messaging_service_sid,
                         to=from_number
                     )
-                    logging.info(f"Sent confirmation to {from_number} with SID: {response_message.sid}")
+                    time.sleep(1) # Give Twilio time to process the message
+                    response_message = self.client.messages(response_message.sid).fetch()
+                    if response_message.error_code == 21610:
+                        logging.info(f"User {from_number} has opted out, removing from subscribers")
+                        self.state_manager.remove_subscriber(from_number)
+                    else:
+                        logging.info(f"Sent confirmation to {from_number} with SID: {response_message.sid}")
                 except TwilioRestException as e:
                     logging.error(f"Twilio error sending confirmation to {from_number}: {e}")
                 except Exception as e:
