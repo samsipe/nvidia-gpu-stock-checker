@@ -9,7 +9,7 @@ This repository monitors Newegg's website for RTX 5090 GPU availability and send
 - Only alerts on state changes (unavailable → available) to avoid notification spam
 - Uses GitHub Actions Cache to reliably maintain state between runs
 - Uses Poetry for dependency management
-- Supports SMS subscription system (text START/STOP to subscribe/unsubscribe)
+- Simplified subscription system - anyone who texts your Twilio number gets notified
 - Optional Twilio webhook for triggering checks when receiving SMS messages
 - Docker support for consistent development and deployment environments
 
@@ -28,6 +28,7 @@ This repository monitors Newegg's website for RTX 5090 GPU availability and send
      - `TWILIO_ACCOUNT_SID`: Your Twilio account SID
      - `TWILIO_AUTH_TOKEN`: Your Twilio auth token
      - `TWILIO_FROM_NUMBER`: Your Twilio phone number (format: +1XXXXXXXXXX)
+     - `TWILIO_MESSAGING_SERVICE_SID`: Your Messaging Service SID (if using Messaging Services)
 
 4. **Enable GitHub Actions**
    - Go to the Actions tab and enable workflows
@@ -46,16 +47,40 @@ You can also manually trigger a check by going to the Actions tab and running th
 
 ## SMS Subscription System
 
-Users can subscribe to receive notifications by texting your Twilio number:
+The subscription system is very simple:
 
-- Text `START` to subscribe to notifications
-- Text `STOP` to unsubscribe from notifications
+- Anyone who texts your Twilio number (for any reason) is automatically added as a subscriber
+- Users can text `STOP` to unsubscribe (handled automatically by Twilio)
+- No need for special commands - just text the number to get alerts!
 
-The system maintains a list of subscribers in the state file.
+## Setting Up Twilio Messaging Services (Recommended)
+
+This project can use Twilio's Messaging Services for improved message deliverability and simpler opt-out handling.
+
+1. **Create a Messaging Service in Twilio Console**
+   - Log in to [Twilio Console](https://www.twilio.com/console)
+   - Navigate to "Messaging" > "Services"
+   - Click "Create Messaging Service"
+   - Give it a name like "NVIDIA GPU Stock Checker"
+   - Choose "Notifications, alerts, and updates" as the use case
+
+2. **Add Your Phone Number to the Messaging Service**
+   - In your new Messaging Service, click "Add Senders"
+   - Select "Phone Number" as the sender type
+   - Choose your Twilio phone number and click "Continue"
+
+3. **Configure Advanced Opt-Out (Optional but Recommended)**
+   - In your Messaging Service, find the "Opt-Out Management" section
+   - Click "Enable Advanced Opt-Out"
+   - You can customize confirmation messages that users receive when they text STOP
+
+4. **Update Your Environment Variables**
+   - Add `TWILIO_MESSAGING_SERVICE_SID` to your `.env` file with the SID of your new Messaging Service
+   - The SID starts with "MG" and can be found in your Messaging Service dashboard
 
 ## Deploying the Twilio Webhook (Optional)
 
-For a more responsive system, you can deploy the included `twilio_webhook.js` file as a Twilio Function. This will trigger a stock check whenever someone texts your Twilio number (e.g., to subscribe or unsubscribe).
+For a more responsive system, you can deploy the included `twilio_webhook.js` file as a Twilio Function. This will trigger a stock check whenever someone texts your Twilio number.
 
 1. **Log in to your Twilio Console**
    - Go to [https://www.twilio.com/console](https://www.twilio.com/console)
@@ -108,6 +133,7 @@ This project includes Docker support for consistent development and deployment e
    TWILIO_ACCOUNT_SID=your_account_sid
    TWILIO_AUTH_TOKEN=your_auth_token
    TWILIO_FROM_NUMBER=your_twilio_number
+   TWILIO_MESSAGING_SERVICE_SID=your_messaging_service_sid
    ```
 
 3. **Build and start the container:**
@@ -162,6 +188,7 @@ If you want to test the script locally without Docker:
    TWILIO_ACCOUNT_SID=your_account_sid
    TWILIO_AUTH_TOKEN=your_auth_token
    TWILIO_FROM_NUMBER=your_twilio_number
+   TWILIO_MESSAGING_SERVICE_SID=your_messaging_service_sid
    ```
 
 4. **Run the script:**
@@ -174,7 +201,6 @@ If you want to test the script locally without Docker:
 Edit the [config.py](config.py) file to change:
 - Target GPU model `TARGET_GPU`
 - Monitoring URL `NVIDIA_URL` (link to a product search on Newegg)
-- Subscription keywords `SUBSCRIBE_KEYWORD` and `UNSUBSCRIBE_KEYWORD`
 - This can be modified to check the stock of any item on Newegg
 
 ## Troubleshooting
