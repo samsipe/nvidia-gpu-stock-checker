@@ -28,7 +28,7 @@ jobs:
 
     - name: Restore cache
       id: cache-state
-      uses: actions/cache@v4
+      uses: actions/cache/restore@v4
       with:
         path: |
           gpu_availability.json
@@ -54,3 +54,12 @@ jobs:
         TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
         TWILIO_MESSAGING_SERVICE_SID: ${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}
       run: poetry run python main.py
+
+    - name: Save cache
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          gpu_availability.json
+          .venv
+          ~/.local
+        key: gpu-state-${{ github.sha }}
