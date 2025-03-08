@@ -1,8 +1,7 @@
 import json
 import os
 import logging
-import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from config import STATE_FILE
 
@@ -13,10 +12,7 @@ class StateManager:
 
     # Define default state structure as a class variable for consistency
     DEFAULT_STATE = {
-        "stock": {
-            "available": False,
-            "last_checked": None
-        },
+        "available": False,
         "subscribers": [],
         "last_message_date": None
     }
@@ -59,12 +55,11 @@ class StateManager:
         state = self.load_state()
 
         # Check if state changed
-        previous_available = state["stock"].get("available", False)
+        previous_available = state.get("available", False)
         state_changed = available != previous_available
 
         # Update stock state
-        state["stock"]["available"] = available
-        state["stock"]["last_checked"] = time.time()
+        state["available"] = available
 
         self.save_state(state)
         return state_changed
@@ -72,7 +67,9 @@ class StateManager:
     def get_stock_state(self):
         """Get current stock state"""
         state = self.load_state()
-        return state["stock"]
+        return {
+            "available": state["available"]
+        }
 
     def add_subscriber(self, phone_number):
         """Add a subscriber to the state"""
@@ -112,6 +109,9 @@ class StateManager:
         self.save_state(state)
 
     def get_last_message_date(self):
-        """Get the last message date checked"""
+        """Get the last message date checked, defaulting to one hour ago if not set"""
         state = self.load_state()
+        if state["last_message_date"] is None:
+            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+            return one_hour_ago.isoformat() + "+00:00"
         return state["last_message_date"]
