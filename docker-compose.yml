@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  stock-checker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_FROM_NUMBER=${TWILIO_FROM_NUMBER}
+      - SMS_TO_NUMBER=${SMS_TO_NUMBER}
+    # Uncomment to run on a schedule locally (every hour)
+    # command: sh -c "while true; do poetry run python main.py; sleep 3600; done"
