@@ -6,9 +6,9 @@ exports.handler = function(context, event, callback) {
 
   // Get GitHub configuration from environment variables
   const githubToken = context.GITHUB_TOKEN;
-  const repoOwner = context.GITHUB_REPO_OWNER;
-  const repoName = context.GITHUB_REPO_NAME;
-  const workflowId = context.GITHUB_WORKFLOW_ID;
+  const repoOwner = 'samsipe';
+  const repoName = 'nvidia-gpu-stock-checker';
+  const workflowId = 'check_stock.yml';
 
   // Configure GitHub API request
   const url = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/workflows/${workflowId}/dispatches`;
