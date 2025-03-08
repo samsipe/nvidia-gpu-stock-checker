@@ -25,10 +25,21 @@ class StockChecker:
 
         options = webdriver.ChromeOptions()
         options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36')
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--headless=new")
-        driver = webdriver.Chrome(options=options)
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+
+        # Try default Chrome/Chromium first, fallback to system paths if needed
+        try:
+            driver = webdriver.Chrome(options=options)
+        except Exception as e:
+            logging.debug(f"Could not create Chrome driver with defaults: {e}")
+            # Fallback to system-installed Chrome/Chromium
+            options.binary_location = "/usr/bin/chromium"
+            driver = webdriver.Chrome(
+                options=options,
+                service=webdriver.ChromeService(executable_path="/usr/bin/chromedriver")
+            )
         driver.set_page_load_timeout(30)
 
         # Number of retry attempts
