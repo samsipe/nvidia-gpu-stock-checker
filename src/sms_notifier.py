@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
+from twilio.http.http_client import TwilioHttpClient
 
 from config import (
     TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER,
@@ -10,6 +11,9 @@ from config import (
 from src.state_manager import StateManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Set Twilio HTTP client logger to WARNING level
+logging.getLogger('twilio.http_client').setLevel(logging.WARNING)
 
 class SMSNotifier:
     def __init__(self):
@@ -20,7 +24,9 @@ class SMSNotifier:
 
         # Initialize Twilio client
         if all([self.account_sid, self.auth_token, self.from_number]):
-            self.client = Client(self.account_sid, self.auth_token)
+            # Create a custom HTTP client with reduced logging
+            http_client = TwilioHttpClient()
+            self.client = Client(self.account_sid, self.auth_token, http_client=http_client)
         else:
             logging.error("SMS configuration is incomplete. Check your environment variables.")
             self.client = None
