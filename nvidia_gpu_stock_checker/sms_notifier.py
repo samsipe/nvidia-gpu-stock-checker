@@ -9,7 +9,7 @@ from config import (
     TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER,
     TWILIO_MESSAGING_SERVICE_SID, TARGET_GPU, NVIDIA_URL
 )
-from src.state_manager import StateManager
+from nvidia_gpu_stock_checker.state_manager import StateManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

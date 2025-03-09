@@ -1,6 +1,6 @@
 [project]
 name = "nvidia-gpu-stock-checker"
-version = "0.0.1"
+version = "0.1.0"
 description = "Monitors NVIDIA's website for RTX 5090 FE availability and sends SMS notifications"
 authors = [
     {name = "Sam Sipe", email = "sam@sipe.io"}

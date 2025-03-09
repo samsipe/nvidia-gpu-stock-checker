@@ -1,6 +1,6 @@
 import logging
-from src.stock_checker import StockChecker
-from src.sms_notifier import SMSNotifier
+from nvidia_gpu_stock_checker.stock_checker import StockChecker
+from nvidia_gpu_stock_checker.sms_notifier import SMSNotifier
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

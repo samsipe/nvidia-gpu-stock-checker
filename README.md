@@ -158,7 +158,7 @@ docker-compose run stock-checker
 
 ## Reducing Twilio Logging
 
-By default, Twilio's HTTP client logs detailed information at the INFO level. If you want to reduce this logging and only see warnings and errors, add the following code to your `src/sms_notifier.py` file after the imports:
+By default, Twilio's HTTP client logs detailed information at the INFO level. If you want to reduce this logging and only see warnings and errors, add the following code to your `nvidia_gpu_stock_checker/sms_notifier.py` file after the imports:
 
 ```python
 # Set Twilio loggers to WARNING level to reduce verbose logging

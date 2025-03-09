@@ -5,7 +5,7 @@ import time
 import logging
 
 from config import NVIDIA_URL, STATE_FILE, TARGET_GPU
-from src.state_manager import StateManager
+from nvidia_gpu_stock_checker.state_manager import StateManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
