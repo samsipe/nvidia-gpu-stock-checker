@@ -5,7 +5,10 @@ from datetime import datetime, timezone
 
 from config import STATE_FILE
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 class StateManager:
     """Class to manage the shared state between components"""
@@ -14,7 +17,9 @@ class StateManager:
     DEFAULT_STATE = {
         "available": False,
         "subscribers": [],
-        "last_message_date": datetime.now(timezone.utc).isoformat() # Prevents a burst of messages when the cache is empty
+        "last_message_date": datetime.now(
+            timezone.utc
+        ).isoformat(),  # Prevents a burst of messages when the cache is empty
     }
 
     def __init__(self, state_file=STATE_FILE):
@@ -24,7 +29,7 @@ class StateManager:
         """Load current state from file"""
         if os.path.exists(self.state_file):
             try:
-                with open(self.state_file, 'r') as f:
+                with open(self.state_file, "r") as f:
                     state = json.load(f)
                     logging.debug(f"Loaded state: {state}")
 
@@ -44,7 +49,7 @@ class StateManager:
     def save_state(self, state):
         """Save state to file"""
         try:
-            with open(self.state_file, 'w') as f:
+            with open(self.state_file, "w") as f:
                 json.dump(state, f)
                 logging.debug(f"Saved state: {state}")
         except Exception as e:
@@ -67,9 +72,7 @@ class StateManager:
     def get_stock_state(self):
         """Get current stock state"""
         state = self.load_state()
-        return {
-            "available": state["available"]
-        }
+        return {"available": state["available"]}
 
     def add_subscriber(self, phone_number):
         """Add a subscriber to the state"""

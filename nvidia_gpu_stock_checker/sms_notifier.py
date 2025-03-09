@@ -6,15 +6,22 @@ from twilio.http.http_client import TwilioHttpClient
 import time
 
 from config import (
-    TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER,
-    TWILIO_MESSAGING_SERVICE_SID, TARGET_GPU, NVIDIA_URL
+    TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN,
+    TWILIO_FROM_NUMBER,
+    TWILIO_MESSAGING_SERVICE_SID,
+    TARGET_GPU,
+    NVIDIA_URL,
 )
 from nvidia_gpu_stock_checker.state_manager import StateManager
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Set Twilio loggers to WARNING level to reduce verbose logging
-logging.getLogger('twilio').setLevel(logging.WARNING)
+logging.getLogger("twilio").setLevel(logging.WARNING)
+
 
 class SMSNotifier:
     def __init__(self):
@@ -25,12 +32,23 @@ class SMSNotifier:
         self.state_manager = StateManager()
 
         # Initialize Twilio client
-        if all([self.account_sid, self.auth_token, self.from_number, self.messaging_service_sid]):
+        if all(
+            [
+                self.account_sid,
+                self.auth_token,
+                self.from_number,
+                self.messaging_service_sid,
+            ]
+        ):
             # Create a custom HTTP client with reduced logging
             http_client = TwilioHttpClient()
-            self.client = Client(self.account_sid, self.auth_token, http_client=http_client)
+            self.client = Client(
+                self.account_sid, self.auth_token, http_client=http_client
+            )
         else:
-            logging.error("SMS configuration is incomplete. Check your environment variables.")
+            logging.error(
+                "SMS configuration is incomplete. Check your environment variables."
+            )
             self.client = None
 
     def send_notification(self):
@@ -54,16 +72,20 @@ class SMSNotifier:
                         body=f"🚨 ALERT: {TARGET_GPU} IS NOW IN STOCK! {NVIDIA_URL}",
                         from_=self.from_number,
                         messaging_service_sid=self.messaging_service_sid,
-                        to=to_number
+                        to=to_number,
                     )
-                    logging.info(f"SMS notification sent to {to_number} with SID: {message.sid}")
+                    logging.info(
+                        f"SMS notification sent to {to_number} with SID: {message.sid}"
+                    )
                     successful_sends += 1
                 except TwilioRestException as e:
                     logging.error(f"Twilio error sending SMS to {to_number}: {e}")
                 except Exception as e:
                     logging.error(f"Error sending SMS to {to_number}: {e}")
 
-            logging.info(f"Notification sent to {successful_sends}/{len(subscribers)} subscribers")
+            logging.info(
+                f"Notification sent to {successful_sends}/{len(subscribers)} subscribers"
+            )
             return successful_sends > 0
 
         except Exception as e:
@@ -99,7 +121,10 @@ class SMSNotifier:
             processed_count = 0
             for message in messages:
                 # Skip messages we've already processed
-                if last_message_date and message.date_created.isoformat() <= last_message_date:
+                if (
+                    last_message_date
+                    and message.date_created.isoformat() <= last_message_date
+                ):
                     break
 
                 processed_count += 1
@@ -115,23 +140,33 @@ class SMSNotifier:
                         body=f"You're subscribed for {TARGET_GPU} alerts. We'll text you when it's in stock.",
                         from_=self.from_number,
                         messaging_service_sid=self.messaging_service_sid,
-                        to=from_number
+                        to=from_number,
                     )
-                    time.sleep(1) # Give Twilio time to process the message
-                    response_message = self.client.messages(response_message.sid).fetch()
+                    time.sleep(1)  # Give Twilio time to process the message
+                    response_message = self.client.messages(
+                        response_message.sid
+                    ).fetch()
                     if response_message.error_code == 21610:
-                        logging.info(f"User {from_number} has opted out, removing from subscribers")
+                        logging.info(
+                            f"User {from_number} has opted out, removing from subscribers"
+                        )
                         self.state_manager.remove_subscriber(from_number)
                     else:
-                        logging.info(f"Sent confirmation to {from_number} with SID: {response_message.sid}")
+                        logging.info(
+                            f"Sent confirmation to {from_number} with SID: {response_message.sid}"
+                        )
                 except TwilioRestException as e:
-                    logging.error(f"Twilio error sending confirmation to {from_number}: {e}")
+                    logging.error(
+                        f"Twilio error sending confirmation to {from_number}: {e}"
+                    )
                 except Exception as e:
                     logging.error(f"Error sending confirmation to {from_number}: {e}")
 
             # Update the last message date we processed
             if messages:
-                self.state_manager.update_last_message_date(messages[0].date_created.isoformat())
+                self.state_manager.update_last_message_date(
+                    messages[0].date_created.isoformat()
+                )
 
             logging.info(f"Processed {processed_count} new messages")
 
