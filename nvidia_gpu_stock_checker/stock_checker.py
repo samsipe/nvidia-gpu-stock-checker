@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from bs4 import BeautifulSoup
 import time
 import logging
@@ -35,6 +35,10 @@ class StockChecker:
         # Try default Chrome/Chromium first, fallback to system paths if needed
         try:
             driver = webdriver.Chrome(options=options)
+        except WebDriverException as e:
+            logging.error(f"Failed to start browser: {e}")
+            self.state_manager.update_stock_state(False)
+            return False, previous_available
         except Exception as e:
             logging.debug(f"Could not create Chrome driver with defaults: {e}")
             # Fallback to system-installed Chrome/Chromium
