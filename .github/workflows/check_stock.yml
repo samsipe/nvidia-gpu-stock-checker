@@ -43,6 +43,6 @@ jobs:
       env:
         TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
         TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-        TWILIO_FROM_NUMBER: ${{ env.TWILIO_FROM_NUMBER }}
+        TWILIO_FROM_NUMBER: ${{ vars.TWILIO_FROM_NUMBER }}
         TWILIO_MESSAGING_SERVICE_SID: ${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}
       run: poetry run python main.py
